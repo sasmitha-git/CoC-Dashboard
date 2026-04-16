@@ -11,5 +11,6 @@ public class AuthResponse {
     private String accessToken;
     private String tokenType;
     private String username;
+    private String playerTag;
     private String email;
 }

@@ -6,8 +6,10 @@ import com.punchibanda.coc.auth.dto.RegisterRequest;
 import com.punchibanda.coc.auth.model.User;
 import com.punchibanda.coc.auth.repository.UserRepository;
 import com.punchibanda.coc.common.exception.DuplicateResourceException;
+import com.punchibanda.coc.common.exception.ExternalApiException;
 import com.punchibanda.coc.common.exception.ResourceNotFoundException;
 import com.punchibanda.coc.config.JWTUtil;
+import com.punchibanda.coc.player.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
 
+    private final PlayerService playerService;
+
     public AuthResponse register(RegisterRequest request) {
 
         if(userRepository.existsByUsername(request.getUsername())) {
@@ -29,8 +33,15 @@ public class AuthService {
             throw new DuplicateResourceException("Email is already in use");
         }
 
+        try{
+            playerService.getPlayer(request.getPlayerTag());
+        } catch (Exception e) {
+            throw new ExternalApiException("Invalid player tag: "+request.getPlayerTag());
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
+                .playerTag(request.getPlayerTag())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .build();
@@ -43,6 +54,7 @@ public class AuthService {
                 .accessToken(token)
                 .tokenType("Bearer")
                 .username(user.getUsername())
+                .playerTag(user.getPlayerTag())
                 .email(user.getEmail())
                 .build();
     }
@@ -61,6 +73,7 @@ public class AuthService {
                 .accessToken(token)
                 .tokenType("Bearer")
                 .username(user.getUsername())
+                .playerTag(user.getPlayerTag())
                 .email(user.getEmail())
                 .build();
     }
