@@ -2,6 +2,7 @@ package com.punchibanda.coc.player.service;
 
 import com.punchibanda.coc.common.exception.ExternalApiException;
 import com.punchibanda.coc.common.exception.ResourceNotFoundException;
+import com.punchibanda.coc.player.dto.BuilderBaseLeagueDetailsDTO;
 import com.punchibanda.coc.player.dto.PlayerDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,35 +33,74 @@ public class PlayerService {
 
     @Cacheable(value = "players", key = "#playerTag")
     public PlayerDTO getPlayer(String playerTag) {
-        log.info("Cache MISS for player: {} — calling CoC API", playerTag);
+        log.info("Cache MISS for player: {} - calling CoC API", playerTag);
 
-        String tag = playerTag.startsWith("#")
-                ? playerTag
-                : "#" + playerTag;
-
+        String tag = playerTag.startsWith("#") ? playerTag : "#" + playerTag;
         String encodedTag = tag.replace("#", "%23");
-        String rawUrl = baseUrl + "/players/" + encodedTag;
 
-        log.info("Calling CoC API URL: {}", rawUrl);
+        String playerUrl = baseUrl + "/players/" + encodedTag;
+        log.info("Calling CoC API URL: {}", playerUrl);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + apiToken);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+        HttpEntity<String> entity = createEntity();
 
         try {
             ResponseEntity<PlayerDTO> response = restTemplate.exchange(
-                    URI.create(rawUrl),
+                    URI.create(playerUrl),
                     HttpMethod.GET,
                     entity,
                     PlayerDTO.class
             );
-            return response.getBody();
+
+            PlayerDTO player = response.getBody();
+
+            if (player != null
+                    && player.getBuilderBaseLeague() != null
+                    && player.getBuilderBaseLeague().getId() > 0
+                    && player.getBuilderBaseLeague().getIconUrls() == null) {
+
+                enrichBuilderBaseLeague(player, entity);
+            }
+
+            return player;
+
         } catch (HttpClientErrorException.NotFound e) {
-            throw new ResourceNotFoundException(
-                    "Player not found with tag: " + playerTag);
+            throw new ResourceNotFoundException("Player not found with tag: " + playerTag);
         } catch (HttpClientErrorException e) {
-            throw new ExternalApiException(
-                    "CoC API error: " + e.getMessage());
+            throw new ExternalApiException("CoC API error: " + e.getMessage());
         }
+    }
+
+    private void enrichBuilderBaseLeague(PlayerDTO player, HttpEntity<String> entity) {
+        int leagueId = player.getBuilderBaseLeague().getId();
+        String leagueUrl = baseUrl + "/builderbaseleagues/" + leagueId;
+
+        log.info("Calling Builder Base League API URL: {}", leagueUrl);
+
+        try {
+            ResponseEntity<BuilderBaseLeagueDetailsDTO> leagueResponse = restTemplate.exchange(
+                    URI.create(leagueUrl),
+                    HttpMethod.GET,
+                    entity,
+                    BuilderBaseLeagueDetailsDTO.class
+            );
+
+            BuilderBaseLeagueDetailsDTO leagueDetails = leagueResponse.getBody();
+
+            if (leagueDetails != null) {
+                player.getBuilderBaseLeague().setIconUrls(leagueDetails.getIconUrls());
+
+                if (player.getBuilderBaseLeague().getName() == null) {
+                    player.getBuilderBaseLeague().setName(leagueDetails.getName());
+                }
+            }
+        } catch (HttpClientErrorException e) {
+            log.warn("Failed to enrich builder base league {}: {}", leagueId, e.getMessage());
+        }
+    }
+
+    private HttpEntity<String> createEntity() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + apiToken);
+        return new HttpEntity<>(headers);
     }
 }
