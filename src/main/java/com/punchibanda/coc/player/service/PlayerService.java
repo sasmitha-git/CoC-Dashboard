@@ -4,6 +4,8 @@ import com.punchibanda.coc.common.exception.ExternalApiException;
 import com.punchibanda.coc.common.exception.ResourceNotFoundException;
 import com.punchibanda.coc.player.dto.BuilderBaseLeagueDetailsDTO;
 import com.punchibanda.coc.player.dto.PlayerDTO;
+import com.punchibanda.coc.player.dto.VerifyPlayerTokenRequestDTO;
+import com.punchibanda.coc.player.dto.VerifyPlayerTokenResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,9 +100,42 @@ public class PlayerService {
         }
     }
 
-    private HttpEntity<String> createEntity() {
+
+    public void verifyPlayerToken(String playerTag, String apiToken) {
+        String tag = playerTag.startsWith("#") ? playerTag : "#" + playerTag;
+        String encodedTag = tag.replace("#", "%23");
+        String verifyUrl = baseUrl + "/players/" + encodedTag + "/verifytoken";
+
+        HttpEntity<VerifyPlayerTokenRequestDTO> entity =
+                new HttpEntity<>(new VerifyPlayerTokenRequestDTO(apiToken), createHeaders());
+
+        try {
+            ResponseEntity<VerifyPlayerTokenResponseDTO> response = restTemplate.exchange(
+                    URI.create(verifyUrl),
+                    HttpMethod.POST,
+                    entity,
+                    VerifyPlayerTokenResponseDTO.class
+            );
+
+            VerifyPlayerTokenResponseDTO body = response.getBody();
+
+            if (body == null || !"ok".equalsIgnoreCase(body.getStatus())) {
+                throw new ExternalApiException("Player API token verification failed");
+            }
+        } catch (HttpClientErrorException e) {
+            throw new ExternalApiException("Player API token verification failed");
+        }
+    }
+
+
+
+    private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + apiToken);
-        return new HttpEntity<>(headers);
+        return headers;
+    }
+
+    private HttpEntity<String> createEntity() {
+        return new HttpEntity<>(createHeaders());
     }
 }

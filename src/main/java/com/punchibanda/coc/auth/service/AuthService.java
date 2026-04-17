@@ -26,17 +26,23 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
 
-        if(userRepository.existsByUsername(request.getUsername())) {
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new DuplicateResourceException("Username is already in use");
         }
-        if(userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Email is already in use");
         }
+        if (userRepository.existsByPlayerTag(request.getPlayerTag())) {
+            throw new DuplicateResourceException("Player tag is already registered");
+        }
 
-        try{
+        try {
             playerService.getPlayer(request.getPlayerTag());
+            playerService.verifyPlayerToken(request.getPlayerTag(), request.getApiToken());
+        } catch (ExternalApiException e) {
+            throw e;
         } catch (Exception e) {
-            throw new ExternalApiException("Invalid player tag: "+request.getPlayerTag());
+            throw new ExternalApiException("Invalid player tag or player API token");
         }
 
         User user = User.builder()
@@ -58,6 +64,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .build();
     }
+
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
