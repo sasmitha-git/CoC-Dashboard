@@ -1,0 +1,1865 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.env.example
+.gitignore
+docker-compose.yml
+Dockerfile
+pom.xml
+README.md
+src/main/java/com/punchibanda/coc/auth/controller/AuthController.java
+src/main/java/com/punchibanda/coc/auth/dto/AuthResponse.java
+src/main/java/com/punchibanda/coc/auth/dto/LoginRequest.java
+src/main/java/com/punchibanda/coc/auth/dto/RegisterRequest.java
+src/main/java/com/punchibanda/coc/auth/model/User.java
+src/main/java/com/punchibanda/coc/auth/repository/UserRepository.java
+src/main/java/com/punchibanda/coc/auth/service/AuthService.java
+src/main/java/com/punchibanda/coc/clan/client/ClanClient.java
+src/main/java/com/punchibanda/coc/clan/controller/ClanController.java
+src/main/java/com/punchibanda/coc/clan/dto/ClanDTO.java
+src/main/java/com/punchibanda/coc/clan/dto/ClanLeaderboardDTO.java
+src/main/java/com/punchibanda/coc/clan/service/ClanService.java
+src/main/java/com/punchibanda/coc/CocDashboardApplication.java
+src/main/java/com/punchibanda/coc/common/dto/ErrorResponse.java
+src/main/java/com/punchibanda/coc/common/exception/DuplicateResourceException.java
+src/main/java/com/punchibanda/coc/common/exception/ExternalApiException.java
+src/main/java/com/punchibanda/coc/common/exception/GlobalExceptionHandler.java
+src/main/java/com/punchibanda/coc/common/exception/ResourceNotFoundException.java
+src/main/java/com/punchibanda/coc/config/AppConfig.java
+src/main/java/com/punchibanda/coc/config/JwtAuthFilter.java
+src/main/java/com/punchibanda/coc/config/JWTUtil.java
+src/main/java/com/punchibanda/coc/config/RedisConfig.java
+src/main/java/com/punchibanda/coc/config/SecurityConfig.java
+src/main/java/com/punchibanda/coc/player/controller/PlayerController.java
+src/main/java/com/punchibanda/coc/player/dto/BuilderBaseLeagueDetailsDTO.java
+src/main/java/com/punchibanda/coc/player/dto/PlayerDTO.java
+src/main/java/com/punchibanda/coc/player/dto/VerifyPlayerTokenRequestDTO.java
+src/main/java/com/punchibanda/coc/player/dto/VerifyPlayerTokenResponseDTO.java
+src/main/java/com/punchibanda/coc/player/service/PlayerService.java
+src/main/java/com/punchibanda/coc/war/client/WarClient.java
+src/main/java/com/punchibanda/coc/war/controller/WarController.java
+src/main/java/com/punchibanda/coc/war/dto/WarDTO.java
+src/main/java/com/punchibanda/coc/war/dto/WarSummaryDTO.java
+src/main/java/com/punchibanda/coc/war/service/WarService.java
+src/main/resources/application.properties
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".env.example">
+COC_API_TOKEN=your_coc_api_token_here
+DB_PASSWORD=your_db_password_here
+JWT_SECRET=your_jwt_secret_here
+</file>
+
+<file path=".gitignore">
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+.env
+application-local.properties
+</file>
+
+<file path="docker-compose.yml">
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: coc-postgres
+    environment:
+      POSTGRES_DB: coc_dashboard
+      POSTGRES_USER: coc_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: coc-redis
+    ports:
+      - "6379:6379"
+
+  coc-app:
+    build: .
+    container_name: coc-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://coc-postgres:5432/coc_dashboard
+      - SPRING_DATASOURCE_USERNAME=coc_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=coc-redis
+      - COC_API_TOKEN=${COC_API_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
+</file>
+
+<file path="Dockerfile">
+#Base Image
+FROM eclipse-temurin:17-jre
+
+#Working directory inside container
+WORKDIR /app
+
+#COPY jar from target folder
+COPY target/coc-dashboard-0.0.1.jar app.jar
+
+#Expose port
+EXPOSE 8080
+
+#Run the application
+ENTRYPOINT ["java", "-jar","app.jar"]
+</file>
+
+<file path="pom.xml">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.punchibanda.coc</groupId>
+    <artifactId>coc-dashboard</artifactId>
+    <version>0.0.1</version>
+    <name>coc-dashboard</name>
+    <description>Clash of Clans Analytics Dashboard</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <jjwt.version>0.11.5</jjwt.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- Spring Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Spring Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL Driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- JWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+</file>
+
+<file path="README.md">
+# CoC Dashboard
+
+A Clash of Clans analytics dashboard built with Spring Boot,
+fronted by WSO2 API Manager.
+
+## Tech Stack
+- Java 17 + Spring Boot 3.2
+- WSO2 API Manager (Gateway)
+- PostgreSQL (Database)
+- Redis (Caching)
+- Docker Compose
+
+## Status
+🚧 In development — frontend coming soon
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/auth/controller/AuthController.java">
+package com.punchibanda.coc.auth.controller;
+
+import com.punchibanda.coc.auth.dto.AuthResponse;
+import com.punchibanda.coc.auth.dto.LoginRequest;
+import com.punchibanda.coc.auth.dto.RegisterRequest;
+import com.punchibanda.coc.auth.service.AuthService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/auth/dto/LoginRequest.java">
+package com.punchibanda.coc.auth.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+@Data
+public class LoginRequest {
+
+    @NotBlank(message = "Email is required")
+    private String email;
+
+    @NotBlank(message = "Password is required")
+    private String password;
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/clan/client/ClanClient.java">
+package com.punchibanda.coc.clan.client;
+
+import com.punchibanda.coc.clan.dto.ClanDTO;
+import com.punchibanda.coc.common.exception.ExternalApiException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class ClanClient {
+
+    @Value("${coc.api.base-url}")
+    private String baseUrl;
+
+    @Value("${coc.api.token}")
+
+    private String apiToken;
+
+    private final RestTemplate restTemplate;
+
+    @Cacheable(value = "clans", key = "#clanTag")
+    public ClanDTO fetchClanData(String clanTag) {
+        log.info("Cache MISS for clan: {} — calling CoC API", clanTag);
+
+        String tag = clanTag.startsWith("#") ? clanTag : "#" + clanTag;
+        String rawUrl = baseUrl + "/clans/" + tag.replace("#", "%23");
+        log.info("Calling CoC API URL: {}", rawUrl);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + apiToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+       try {
+           ResponseEntity<ClanDTO> response = restTemplate.exchange(
+                   URI.create(rawUrl),
+                   HttpMethod.GET,
+                   entity,
+                   ClanDTO.class
+           );
+           return response.getBody();
+       } catch (HttpClientErrorException e) {
+           throw new ExternalApiException("CoC API error: " + e.getMessage());
+       }
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/clan/controller/ClanController.java">
+package com.punchibanda.coc.clan.controller;
+
+import com.punchibanda.coc.clan.dto.ClanDTO;
+import com.punchibanda.coc.clan.dto.ClanLeaderboardDTO;
+import com.punchibanda.coc.clan.service.ClanService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/clans")
+@RequiredArgsConstructor
+public class ClanController {
+
+    private final ClanService clanService;
+
+    @GetMapping("/{tag}")
+    public ResponseEntity<ClanDTO> getClan(@PathVariable String tag) {
+        return ResponseEntity.ok(clanService.getClan(tag));
+    }
+
+    @GetMapping("/{tag}/leaderboard")
+    public ResponseEntity<ClanLeaderboardDTO> getLeaderboard(
+            @PathVariable String tag,
+            @RequestParam(defaultValue = "trophies") String sortBy) {
+        return ResponseEntity.ok(clanService.getLeaderboard(tag, sortBy));
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/clan/dto/ClanLeaderboardDTO.java">
+package com.punchibanda.coc.clan.dto;
+
+import lombok.Builder;
+import lombok.Data;
+import java.util.List;
+
+@Data
+@Builder
+public class ClanLeaderboardDTO {
+    private String clanTag;
+    private String clanName;
+    private int totalMembers;
+    private List<ClanDTO.ClanMemberDTO> leaderboard;
+    private String sortedBy;
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/clan/service/ClanService.java">
+package com.punchibanda.coc.clan.service;
+
+import com.punchibanda.coc.clan.client.ClanClient;
+import com.punchibanda.coc.clan.dto.ClanDTO;
+import com.punchibanda.coc.clan.dto.ClanLeaderboardDTO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.Comparator;
+import java.util.List;
+
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class ClanService {
+
+    private final ClanClient clanClient;
+
+    public ClanDTO getClan(String clanTag) {
+        return clanClient.fetchClanData(clanTag);
+    }
+
+    public ClanLeaderboardDTO getLeaderboard(String clanTag, String sortBy) {
+        ClanDTO clan = clanClient.fetchClanData(clanTag);
+
+        List<ClanDTO.ClanMemberDTO> members = clan.getMemberList();
+
+        Comparator<ClanDTO.ClanMemberDTO> comparator = switch (sortBy.toLowerCase()) {
+            case "donations" -> Comparator.comparingInt(
+                    ClanDTO.ClanMemberDTO::getDonations).reversed();
+            case "townhall" -> Comparator.comparingInt(
+                    ClanDTO.ClanMemberDTO::getTownHallLevel).reversed();
+            default -> Comparator.comparingInt(
+                    ClanDTO.ClanMemberDTO::getTrophies).reversed();
+        };
+
+        List<ClanDTO.ClanMemberDTO> sorted = members.stream()
+                .sorted(comparator)
+                .toList();
+
+        return ClanLeaderboardDTO.builder()
+                .clanTag(clan.getTag())
+                .clanName(clan.getName())
+                .totalMembers(clan.getMembers())
+                .leaderboard(sorted)
+                .sortedBy(sortBy)
+                .build();
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/CocDashboardApplication.java">
+package com.punchibanda.coc;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableCaching
+@EnableScheduling
+public class CocDashboardApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CocDashboardApplication.class, args);
+    }
+
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/common/dto/ErrorResponse.java">
+package com.punchibanda.coc.common.dto;
+
+
+import lombok.Builder;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+public class ErrorResponse {
+    private int status;
+    private String error;
+    private String message;
+    private String path;
+    private LocalDateTime timestamp;
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/common/exception/DuplicateResourceException.java">
+package com.punchibanda.coc.common.exception;
+
+public class DuplicateResourceException extends RuntimeException {
+    public DuplicateResourceException(String message) {
+        super(message);
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/common/exception/ExternalApiException.java">
+package com.punchibanda.coc.common.exception;
+
+public class ExternalApiException extends RuntimeException {
+    public ExternalApiException(String message) {
+        super(message);
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/common/exception/GlobalExceptionHandler.java">
+package com.punchibanda.coc.common.exception;
+
+import com.punchibanda.coc.common.dto.ErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            ResourceNotFoundException ex,
+            HttpServletRequest request) {
+        log.error("Resource not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.builder()
+                        .status(404)
+                        .error("Not Found")
+                        .message(ex.getMessage())
+                        .path(request.getRequestURI())
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicate(
+            DuplicateResourceException ex,
+            HttpServletRequest request) {
+        log.error("Duplicate resource: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.builder()
+                        .status(409)
+                        .error("Conflict")
+                        .message(ex.getMessage())
+                        .path(request.getRequestURI())
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
+    @ExceptionHandler(ExternalApiException.class)
+    public ResponseEntity<ErrorResponse> handleExternalApi(
+            ExternalApiException ex,
+            HttpServletRequest request) {
+        log.error("External API error: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(ErrorResponse.builder()
+                        .status(502)
+                        .error("Bad Gateway")
+                        .message(ex.getMessage())
+                        .path(request.getRequestURI())
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidation(
+            MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String field = ((FieldError) error).getField();
+            String message = error.getDefaultMessage();
+            errors.put(field, message);
+        });
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntime(
+            RuntimeException ex,
+            HttpServletRequest request) {
+        log.error("Unexpected error: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.builder()
+                        .status(500)
+                        .error("Internal Server Error")
+                        .message(ex.getMessage())
+                        .path(request.getRequestURI())
+                        .timestamp(LocalDateTime.now())
+                        .build());
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/common/exception/ResourceNotFoundException.java">
+package com.punchibanda.coc.common.exception;
+
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/config/AppConfig.java">
+package com.punchibanda.coc.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/config/JwtAuthFilter.java">
+package com.punchibanda.coc.config;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private final JWTUtil jwtUtil;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
+        log.info("Incoming request path: {}", request.getRequestURI());
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String token = authHeader.substring(7);
+
+        if (jwtUtil.isTokenValid(token)) {
+            String username = jwtUtil.extractUsername(token);
+
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            username, null, new ArrayList<>());
+
+            authToken.setDetails(
+                    new WebAuthenticationDetailsSource()
+                            .buildDetails(request));
+
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authToken);
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/config/JWTUtil.java">
+package com.punchibanda.coc.config;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.security.Key;
+import java.util.Base64;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+@Component
+public class JWTUtil {
+
+    @Value("${jwt.secret}")
+    private String secret;
+
+    @Value("${jwt.expiration}")
+    private long expiration;
+
+    private Key getSigningKey() {
+        byte[] keyBytes = Base64.getDecoder().decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
+    };
+
+    public String generateToken(String username,String email) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("email", email);
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() +expiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            extractAllClaims(token);
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractAllClaims(token)
+                .getExpiration()
+                .before(new Date());
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/config/RedisConfig.java">
+package com.punchibanda.coc.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+
+import java.time.Duration;
+
+@Configuration
+public class RedisConfig {
+
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory factory) {
+        RedisCacheConfiguration config = RedisCacheConfiguration
+                .defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(5))
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(new GenericJackson2JsonRedisSerializer())
+                );
+
+        return RedisCacheManager.builder(factory)
+                .cacheDefaults(config)
+                .build();
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/config/SecurityConfig.java">
+package com.punchibanda.coc.config;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtAuthFilter jwtAuthFilter;
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                )
+                .addFilterBefore(jwtAuthFilter,
+                        UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://localhost:8280"
+        ));
+        config.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        ));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+        return source -> {
+            UrlBasedCorsConfigurationSource urlSource =
+                    new UrlBasedCorsConfigurationSource();
+            urlSource.registerCorsConfiguration("/**", config);
+            return urlSource.getCorsConfiguration(source);
+        };
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/player/controller/PlayerController.java">
+package com.punchibanda.coc.player.controller;
+
+import com.punchibanda.coc.player.dto.PlayerDTO;
+import com.punchibanda.coc.player.service.PlayerService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/players")
+@RequiredArgsConstructor
+public class PlayerController {
+
+    private final PlayerService playerService;
+
+    @GetMapping("/{tag}")
+    public ResponseEntity<PlayerDTO> getPlayer(@PathVariable String tag) {
+        return ResponseEntity.ok(playerService.getPlayer(tag));
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/player/dto/BuilderBaseLeagueDetailsDTO.java">
+package com.punchibanda.coc.player.dto;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Map;
+
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class BuilderBaseLeagueDetailsDTO implements Serializable {
+
+    private int id;
+    private String name;
+
+    @JsonProperty("iconUrls")
+    private Map<String, String> iconUrls;
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/player/dto/VerifyPlayerTokenRequestDTO.java">
+package com.punchibanda.coc.player.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class VerifyPlayerTokenRequestDTO {
+    private String token;
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/player/dto/VerifyPlayerTokenResponseDTO.java">
+package com.punchibanda.coc.player.dto;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
+
+import java.io.Serializable;
+
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class VerifyPlayerTokenResponseDTO implements Serializable {
+    private String tag;
+    private String token;
+    private String status;
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/war/client/WarClient.java">
+package com.punchibanda.coc.war.client;
+
+import com.punchibanda.coc.common.exception.ExternalApiException;
+import com.punchibanda.coc.common.exception.ResourceNotFoundException;
+import com.punchibanda.coc.war.dto.WarDTO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class WarClient {
+
+    @Value("${coc.api.base-url}")
+    private String baseUrl;
+
+    @Value("${coc.api.token}")
+    private String apiToken;
+
+    private final RestTemplate restTemplate;
+
+    @Cacheable(value = "wars", key = "#clanTag")
+    public WarDTO fetchCurrentWar(String clanTag) {
+        log.info("Cache MISS for war: {} — calling CoC API", clanTag);
+
+        String tag = clanTag.startsWith("#") ? clanTag : "#" + clanTag;
+        String rawUrl = baseUrl + "/clans/" + tag.replace("#", "%23")
+                + "/currentwar";
+
+        log.info("Calling CoC API URL: {}", rawUrl);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + apiToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<WarDTO> response = restTemplate.exchange(
+                    URI.create(rawUrl),
+                    HttpMethod.GET,
+                    entity,
+                    WarDTO.class
+            );
+            return response.getBody();
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResourceNotFoundException(
+                    "No war data found for clan: " + clanTag);
+        } catch (HttpClientErrorException.Forbidden e) {
+            throw new ResourceNotFoundException(
+                    "War log is private for clan: " + clanTag);
+        } catch (HttpClientErrorException e) {
+            throw new ExternalApiException(
+                    "CoC API error: " + e.getMessage());
+        }
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/war/controller/WarController.java">
+package com.punchibanda.coc.war.controller;
+
+import com.punchibanda.coc.war.dto.WarDTO;
+import com.punchibanda.coc.war.dto.WarSummaryDTO;
+import com.punchibanda.coc.war.service.WarService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/wars")
+@RequiredArgsConstructor
+public class WarController {
+
+    private final WarService warService;
+
+    @GetMapping("/{clanTag}/current")
+    public ResponseEntity<WarDTO> getCurrentWar(
+            @PathVariable String clanTag) {
+        return ResponseEntity.ok(warService.getCurrentWar(clanTag));
+    }
+
+    @GetMapping("/{clanTag}/summary")
+    public ResponseEntity<WarSummaryDTO> getWarSummary(
+            @PathVariable String clanTag) {
+        return ResponseEntity.ok(warService.getWarSummary(clanTag));
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/war/dto/WarDTO.java">
+package com.punchibanda.coc.war.dto;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import java.io.Serializable;
+import java.util.List;
+
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class WarDTO implements Serializable {
+
+    private String state;
+    private int teamSize;
+
+    @JsonProperty("startTime")
+    private String startTime;
+
+    @JsonProperty("endTime")
+    private String endTime;
+
+    private WarClanDTO clan;
+    private WarClanDTO opponent;
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class WarClanDTO implements Serializable {
+        private String tag;
+        private String name;
+        private int stars;
+        private int attacks;
+
+        @JsonProperty("destructionPercentage")
+        private double destructionPercentage;
+
+        private List<WarMemberDTO> members;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class WarMemberDTO implements Serializable {
+        private String tag;
+        private String name;
+
+        @JsonProperty("mapPosition")
+        private int mapPosition;
+
+        @JsonProperty("townhallLevel")
+        private int townhallLevel;
+
+        private List<AttackDTO> attacks;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class AttackDTO implements Serializable {
+        @JsonProperty("defenderTag")
+        private String defenderTag;
+        private int stars;
+
+        @JsonProperty("destructionPercentage")
+        private int destructionPercentage;
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/war/dto/WarSummaryDTO.java">
+package com.punchibanda.coc.war.dto;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class WarSummaryDTO {
+    private String state;
+    private String result;
+    private int teamSize;
+    private String startTime;
+    private String endTime;
+    private String clanTag;
+    private String clanName;
+    private int clanStars;
+    private double clanDestruction;
+    private String opponentTag;
+    private String opponentName;
+    private int opponentStars;
+    private double opponentDestruction;
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/war/service/WarService.java">
+package com.punchibanda.coc.war.service;
+
+import com.punchibanda.coc.war.client.WarClient;
+import com.punchibanda.coc.war.dto.WarDTO;
+import com.punchibanda.coc.war.dto.WarSummaryDTO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class WarService {
+
+    private final WarClient warClient;
+
+    public WarDTO getCurrentWar(String clanTag) {
+        return warClient.fetchCurrentWar(clanTag);
+    }
+
+    public WarSummaryDTO getWarSummary(String clanTag) {
+        WarDTO war = warClient.fetchCurrentWar(clanTag);
+
+        String result = "ongoing";
+        if (war.getState().equals("warEnded")) {
+            int ourStars = war.getClan().getStars();
+            int theirStars = war.getOpponent().getStars();
+            double ourDestruction = war.getClan().getDestructionPercentage();
+            double theirDestruction = war.getOpponent().getDestructionPercentage();
+
+            if (ourStars > theirStars) result = "win";
+            else if (ourStars < theirStars) result = "loss";
+            else if (ourDestruction > theirDestruction) result = "win";
+            else if (ourDestruction < theirDestruction) result = "loss";
+            else result = "draw";
+        }
+
+        return WarSummaryDTO.builder()
+                .state(war.getState())
+                .result(result)
+                .teamSize(war.getTeamSize())
+                .startTime(war.getStartTime())
+                .endTime(war.getEndTime())
+                .clanTag(war.getClan().getTag())
+                .clanName(war.getClan().getName())
+                .clanStars(war.getClan().getStars())
+                .clanDestruction(war.getClan().getDestructionPercentage())
+                .opponentTag(war.getOpponent().getTag())
+                .opponentName(war.getOpponent().getName())
+                .opponentStars(war.getOpponent().getStars())
+                .opponentDestruction(war.getOpponent().getDestructionPercentage())
+                .build();
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/auth/dto/AuthResponse.java">
+package com.punchibanda.coc.auth.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+@AllArgsConstructor
+public class AuthResponse {
+    private String accessToken;
+    private String tokenType;
+    private String username;
+    private String playerTag;
+    private String email;
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/auth/model/User.java">
+package com.punchibanda.coc.auth.model;
+
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name="users")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+
+    @Column(unique = true, nullable = false)
+    private String username;
+
+    @Column(nullable = false)
+    private String playerTag;
+
+    @Column(unique = true,nullable = false)
+    private String email;
+
+    @Column(nullable = false)
+    private String passwordHash;
+
+    private String clanTag;
+
+    @Column(nullable = false,updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/auth/repository/UserRepository.java">
+package com.punchibanda.coc.auth.repository;
+
+import com.punchibanda.coc.auth.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, String> {
+    Optional<User> findByEmail(String email);
+    Optional<User> findByUsername(String username);
+    boolean existsByEmail(String email);
+    boolean existsByUsername(String username);
+    boolean existsByPlayerTag(String playerTag);
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/clan/dto/ClanDTO.java">
+package com.punchibanda.coc.clan.dto;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ClanDTO implements Serializable {
+
+    private String tag;
+    private String name;
+    private String description;
+
+    @JsonProperty("clanLevel")
+    private int clanLevel;
+
+    @JsonProperty("clanPoints")
+    private int clanPoints;
+
+    private int members;
+
+    @JsonProperty("warWins")
+    private int warWins;
+
+    @JsonProperty("warFrequency")
+    private String warFrequency;
+
+    @JsonProperty("requiredTrophies")
+    private int requiredTrophies;
+
+    @JsonProperty("badgeUrls")
+    private Map<String, String> badgeUrls;
+
+    private LocationDTO location;
+
+    @JsonProperty("memberList")
+    private List<ClanMemberDTO> memberList;
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class LocationDTO implements Serializable {
+        private String name;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class LeagueDTO implements Serializable {
+        private int id;
+        private String name;
+
+        @JsonProperty("iconUrls")
+        private Map<String, String> iconUrls;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ClanMemberDTO implements Serializable {
+        private String tag;
+        private String name;
+        private String role;
+        private int trophies;
+        private int donations;
+
+        @JsonProperty("donationsReceived")
+        private int donationsReceived;
+
+        @JsonProperty("townHallLevel")
+        private int townHallLevel;
+
+        @JsonProperty("expLevel")
+        private int expLevel;
+
+        private LeagueDTO league;
+
+        @JsonProperty("leagueTier")
+        private LeagueDTO leagueTier;
+
+        @JsonProperty("builderBaseLeague")
+        private LeagueDTO builderBaseLeague;
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/player/dto/PlayerDTO.java">
+package com.punchibanda.coc.player.dto;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Map;
+
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class PlayerDTO implements Serializable {
+
+    private String tag;
+    private String name;
+    private String role;
+
+    @JsonProperty("townHallLevel")
+    private int townHallLevel;
+
+    private int trophies;
+    private int wins;
+    private int donations;
+
+    @JsonProperty("donationsReceived")
+    private int donationsReceived;
+
+    @JsonProperty("attackWins")
+    private int attackWins;
+
+    @JsonProperty("defenseWins")
+    private int defenseWins;
+
+    @JsonProperty("bestTrophies")
+    private int bestTrophies;
+
+    @JsonProperty("builderBaseTrophies")
+    private int builderBaseTrophies;
+
+    @JsonProperty("bestBuilderBaseTrophies")
+    private int bestBuilderBaseTrophies;
+
+    @JsonProperty("warStars")
+    private int warStars;
+
+    @JsonProperty("expLevel")
+    private int expLevel;
+
+    @JsonProperty("builderHallLevel")
+    private int builderHallLevel;
+
+    @JsonProperty("warPreference")
+    private String warPreference;
+
+    @JsonProperty("townHallWeaponLevel")
+    private int townHallWeaponLevel;
+
+    private LeagueDTO league;
+
+    @JsonProperty("builderBaseLeague")
+    private LeagueDTO builderBaseLeague;
+
+    @JsonProperty("leagueTier")
+    private LeagueDTO leagueTier;
+
+    private ClanDTO clan;
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class LeagueDTO implements Serializable {
+        private int id;
+        private String name;
+
+        @JsonProperty("iconUrls")
+        private Map<String, String> iconUrls;
+    }
+
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ClanDTO implements Serializable {
+        private String tag;
+        private String name;
+
+        @JsonProperty("clanLevel")
+        private int clanLevel;
+
+        @JsonProperty("badgeUrls")
+        private Map<String, String> badgeUrls;
+    }
+}
+</file>
+
+<file path="src/main/resources/application.properties">
+# App
+spring.application.name=coc-dashboard
+
+#PostgreSQL
+spring.datasource.url=jdbc:postgresql://localhost:5432/coc_dashboard
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+#JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+#Redis
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+
+#JWT
+jwt.secret=${JWT_SECRET}
+jwt.expiration=86400000
+
+#Coc API
+coc.api.token = ${COC_API_TOKEN}
+}
+coc.api.base-url = https://api.clashofclans.com/v1
+
+#Actuator
+management.endpoints.web.exposure.include=health, info
+#management.endpoint.health.show-details=always
+
+#Server
+server.port=8080
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/auth/dto/RegisterRequest.java">
+package com.punchibanda.coc.auth.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class RegisterRequest {
+
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
+    private String username;
+
+    @NotBlank(message = "Player tag is required")
+    private String playerTag;
+
+    @NotBlank(message = "Player API token is required")
+    private String apiToken;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String password;
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/auth/service/AuthService.java">
+package com.punchibanda.coc.auth.service;
+
+import com.punchibanda.coc.auth.dto.AuthResponse;
+import com.punchibanda.coc.auth.dto.LoginRequest;
+import com.punchibanda.coc.auth.dto.RegisterRequest;
+import com.punchibanda.coc.auth.model.User;
+import com.punchibanda.coc.auth.repository.UserRepository;
+import com.punchibanda.coc.common.exception.DuplicateResourceException;
+import com.punchibanda.coc.common.exception.ExternalApiException;
+import com.punchibanda.coc.common.exception.ResourceNotFoundException;
+import com.punchibanda.coc.config.JWTUtil;
+import com.punchibanda.coc.player.service.PlayerService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JWTUtil jwtUtil;
+
+    private final PlayerService playerService;
+
+    public AuthResponse register(RegisterRequest request) {
+
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new DuplicateResourceException("Username is already in use");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Email is already in use");
+        }
+        if (userRepository.existsByPlayerTag(request.getPlayerTag())) {
+            throw new DuplicateResourceException("Player tag is already registered");
+        }
+
+        try {
+            playerService.getPlayer(request.getPlayerTag());
+            playerService.verifyPlayerToken(request.getPlayerTag(), request.getApiToken());
+        } catch (ExternalApiException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ExternalApiException("Invalid player tag or player API token");
+        }
+
+        User user = User.builder()
+                .username(request.getUsername())
+                .playerTag(request.getPlayerTag())
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .build();
+
+        userRepository.save(user);
+
+        String token = jwtUtil.generateToken(user.getUsername(), user.getEmail());
+
+        return AuthResponse.builder()
+                .accessToken(token)
+                .tokenType("Bearer")
+                .username(user.getUsername())
+                .playerTag(user.getPlayerTag())
+                .email(user.getEmail())
+                .build();
+    }
+
+
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+
+        if(!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new ResourceNotFoundException("Invalid email or password");
+        }
+
+        String token = jwtUtil.generateToken(user.getUsername(), user.getEmail());
+
+        return AuthResponse.builder()
+                .accessToken(token)
+                .tokenType("Bearer")
+                .username(user.getUsername())
+                .playerTag(user.getPlayerTag())
+                .email(user.getEmail())
+                .build();
+    }
+}
+</file>
+
+<file path="src/main/java/com/punchibanda/coc/player/service/PlayerService.java">
+package com.punchibanda.coc.player.service;
+
+import com.punchibanda.coc.common.exception.ExternalApiException;
+import com.punchibanda.coc.common.exception.ResourceNotFoundException;
+import com.punchibanda.coc.player.dto.BuilderBaseLeagueDetailsDTO;
+import com.punchibanda.coc.player.dto.PlayerDTO;
+import com.punchibanda.coc.player.dto.VerifyPlayerTokenRequestDTO;
+import com.punchibanda.coc.player.dto.VerifyPlayerTokenResponseDTO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class PlayerService {
+
+    @Value("${coc.api.base-url}")
+    private String baseUrl;
+
+    @Value("${coc.api.token}")
+    private String apiToken;
+
+    private final RestTemplate restTemplate;
+
+    @Cacheable(value = "players", key = "#playerTag")
+    public PlayerDTO getPlayer(String playerTag) {
+        log.info("Cache MISS for player: {} - calling CoC API", playerTag);
+
+        String tag = playerTag.startsWith("#") ? playerTag : "#" + playerTag;
+        String encodedTag = tag.replace("#", "%23");
+
+        String playerUrl = baseUrl + "/players/" + encodedTag;
+        log.info("Calling CoC API URL: {}", playerUrl);
+
+        HttpEntity<String> entity = createEntity();
+
+        try {
+            ResponseEntity<PlayerDTO> response = restTemplate.exchange(
+                    URI.create(playerUrl),
+                    HttpMethod.GET,
+                    entity,
+                    PlayerDTO.class
+            );
+
+            PlayerDTO player = response.getBody();
+
+            if (player != null
+                    && player.getBuilderBaseLeague() != null
+                    && player.getBuilderBaseLeague().getId() > 0
+                    && player.getBuilderBaseLeague().getIconUrls() == null) {
+
+                enrichBuilderBaseLeague(player, entity);
+            }
+
+            return player;
+
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResourceNotFoundException("Player not found with tag: " + playerTag);
+        } catch (HttpClientErrorException e) {
+            throw new ExternalApiException("CoC API error: " + e.getMessage());
+        }
+    }
+
+    private void enrichBuilderBaseLeague(PlayerDTO player, HttpEntity<String> entity) {
+        int leagueId = player.getBuilderBaseLeague().getId();
+        String leagueUrl = baseUrl + "/builderbaseleagues/" + leagueId;
+
+        log.info("Calling Builder Base League API URL: {}", leagueUrl);
+
+        try {
+            ResponseEntity<BuilderBaseLeagueDetailsDTO> leagueResponse = restTemplate.exchange(
+                    URI.create(leagueUrl),
+                    HttpMethod.GET,
+                    entity,
+                    BuilderBaseLeagueDetailsDTO.class
+            );
+
+            BuilderBaseLeagueDetailsDTO leagueDetails = leagueResponse.getBody();
+
+            if (leagueDetails != null) {
+                player.getBuilderBaseLeague().setIconUrls(leagueDetails.getIconUrls());
+
+                if (player.getBuilderBaseLeague().getName() == null) {
+                    player.getBuilderBaseLeague().setName(leagueDetails.getName());
+                }
+            }
+        } catch (HttpClientErrorException e) {
+            log.warn("Failed to enrich builder base league {}: {}", leagueId, e.getMessage());
+        }
+    }
+
+
+    public void verifyPlayerToken(String playerTag, String apiToken) {
+        String tag = playerTag.startsWith("#") ? playerTag : "#" + playerTag;
+        String encodedTag = tag.replace("#", "%23");
+        String verifyUrl = baseUrl + "/players/" + encodedTag + "/verifytoken";
+
+        HttpEntity<VerifyPlayerTokenRequestDTO> entity =
+                new HttpEntity<>(new VerifyPlayerTokenRequestDTO(apiToken), createHeaders());
+
+        try {
+            ResponseEntity<VerifyPlayerTokenResponseDTO> response = restTemplate.exchange(
+                    URI.create(verifyUrl),
+                    HttpMethod.POST,
+                    entity,
+                    VerifyPlayerTokenResponseDTO.class
+            );
+
+            VerifyPlayerTokenResponseDTO body = response.getBody();
+
+            if (body == null || !"ok".equalsIgnoreCase(body.getStatus())) {
+                throw new ExternalApiException("Player API token verification failed");
+            }
+        } catch (HttpClientErrorException e) {
+            throw new ExternalApiException("Player API token verification failed");
+        }
+    }
+
+
+
+    private HttpHeaders createHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + apiToken);
+        return headers;
+    }
+
+    private HttpEntity<String> createEntity() {
+        return new HttpEntity<>(createHeaders());
+    }
+}
+</file>
+
+</files>
